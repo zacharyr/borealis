@@ -52,9 +52,9 @@ def printing(msg):
     sys.stdout.write(RADAR_CONTROL + msg + "\n")
 
 
-def setup_driver(driverpacket, radctrl_to_driver, driver_to_radctrl_iden, txctrfreq, rxctrfreq, 
+def setup_driver(driverpacket, radctrl_to_driver, driver_to_radctrl_iden, txctrfreq, rxctrfreq,
                  txrate, rxrate):
-    """ First packet sent to driver for setup. 
+    """ First packet sent to driver for setup.
         :param driverpacket: the protobuf packet to fill and pass over zmq
         :param radctrl_to_driver: the sender socket for sending the driverpacket
         :param driver_to_radctrl_iden: the receiver socket identity on the driver side
@@ -148,7 +148,7 @@ def send_dsp_metadata(packet, radctrl_to_dsp, dsp_radctrl_iden, radctrl_to_brian
                    brian_radctrl_iden, rxrate, output_sample_rate, seqnum, slice_ids,
                    slice_dict, beam_dict, sequence_time, first_rx_sample_time,
                    main_antenna_count, rxctrfreq, decimation_scheme=None):
-    """ Place data in the receiver packet and send it via zeromq to the signal processing unit and brian. 
+    """ Place data in the receiver packet and send it via zeromq to the signal processing unit and brian.
         Happens every sequence.
         :param packet: the signal processing packet of the protobuf sigprocpacket type.
         :param radctrl_to_dsp: The sender socket for sending data to dsp
@@ -292,7 +292,7 @@ def search_for_experiment(radar_control_to_exp_handler,
 
 def send_datawrite_metadata(packet, radctrl_to_datawrite, datawrite_radctrl_iden,
                             seqnum, nave, scan_flag, inttime, sequences, beamdir_dict,
-                            experiment_id, experiment_string, output_sample_rate,
+                            txctrfreq, rxctrfreq, experiment_id, experiment_string,
                             debug_samples=None):
     """
     Send the metadata about this integration time to datawrite so that it can be recorded.
@@ -327,6 +327,8 @@ def send_datawrite_metadata(packet, radctrl_to_datawrite, datawrite_radctrl_iden
     packet.nave = nave
     packet.last_seqn_num = seqnum
     packet.scan_flag = scan_flag
+    packet.rx_center_freq = rxctrfreq
+    packet.tx_center_freq = txctrfreq
     packet.integration_time = inttime.total_seconds()
     packet.output_sample_rate = output_sample_rate
 
@@ -452,7 +454,7 @@ def radar():
     #  Wait for experiment handler at the start until we have an experiment to run.
     new_experiment_waiting = False
 
-    while not new_experiment_waiting:  
+    while not new_experiment_waiting:
         new_experiment_waiting, experiment = search_for_experiment(
             radar_control_to_exp_handler, options.exphan_to_radctrl_identity,
             'EXPNEEDED')
@@ -461,7 +463,7 @@ def radar():
     new_experiment_loaded = True
 
     # Send driver initial setup data - rates and centre frequency from experiment.
-    # Wait for acknowledgment that USRP object is set up. 
+    # Wait for acknowledgment that USRP object is set up.
     setup_driver(driverpacket, radar_control_to_driver, options.driver_to_radctrl_identity,
                  experiment.txctrfreq, experiment.rxctrfreq, experiment.txrate,
                  experiment.rxrate)
@@ -620,10 +622,10 @@ def radar():
                                 first_integration = False
 
                             if TIME_PROFILE:
-                                time_after_sequence_metadata = datetime.utcnow() 
+                                time_after_sequence_metadata = datetime.utcnow()
                                 sequence_metadata_time = time_after_sequence_metadata - time_now
                                 print('Sequence Metadata time: {}'.format(sequence_metadata_time))
-                            
+
                             # beam_phase_dict is slice_id : list of beamdirs, where beamdir = list
                             # of antenna phase offsets for all antennas for that direction ordered
                             # [0 ... main_antenna_count, 0 ... interferometer_antenna_count]
@@ -638,7 +640,7 @@ def radar():
                                     data_to_driver(driverpacket, radar_control_to_driver,
                                                    options.driver_to_radctrl_identity,
                                                    pulse_dict['samples_array'], experiment.txctrfreq,
-                                                   experiment.rxctrfreq, experiment.txrate, 
+                                                   experiment.rxctrfreq, experiment.txrate,
                                                    experiment.rxrate,
                                                    sequence.numberofreceivesamples,
                                                    pulse_dict['startofburst'], pulse_dict['endofburst'],
@@ -686,6 +688,7 @@ def radar():
                                             options.dw_to_radctrl_identity, last_sequence_num, nave,
                                             scan_flag, integration_period_time,
                                             aveperiod.sequences, slice_to_beamdir_dict,
+                                            experiment.txctrfreq, experiment.rxctrfreq,
                                             experiment.cpid, experiment.comment_string,
                                             experiment.output_rx_rate,
                                             debug_samples=debug_samples)
