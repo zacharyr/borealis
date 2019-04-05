@@ -904,7 +904,7 @@ class DataWrite(object):
                     freqs.append(rx_freq.rxfreq)
 
             one_slice_params = next(iter(parameters_holder.values())).copy()
-            write_raw_rf_params(one_slice_params)
+            write_raw_rf_params(one_slice_params, freqs)
 
         else:
             for rf_samples_location in data_parsing.rawrf_locations:

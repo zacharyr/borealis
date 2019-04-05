@@ -292,7 +292,7 @@ def search_for_experiment(radar_control_to_exp_handler,
 
 def send_datawrite_metadata(packet, radctrl_to_datawrite, datawrite_radctrl_iden,
                             seqnum, nave, scan_flag, inttime, sequences, beamdir_dict,
-                            txctrfreq, rxctrfreq, experiment_id, experiment_string,
+                            txctrfreq, rxctrfreq, experiment_id, experiment_string, output_sample_rate,
                             debug_samples=None):
     """
     Send the metadata about this integration time to datawrite so that it can be recorded.
@@ -691,7 +691,7 @@ def radar():
                                             experiment.txctrfreq, experiment.rxctrfreq,
                                             experiment.cpid, experiment.comment_string,
                                             experiment.output_rx_rate,
-                                            debug_samples=debug_samples)
+                                            debug_samples)
 
                     # end of the averaging period loop - move onto the next averaging period.
                     # Increment the sequence number by the number of sequences that were in this
