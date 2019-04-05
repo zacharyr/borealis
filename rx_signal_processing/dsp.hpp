@@ -48,7 +48,8 @@ class DSPCore {
   void cuda_postprocessing_callback(std::vector<double> freqs, uint32_t total_antennas,
                                             uint32_t num_samples_rf,
                                             std::vector<uint32_t> samples_per_antenna,
-                                            std::vector<uint32_t> total_output_samples);
+                                            std::vector<uint32_t> total_output_samples,
+                                            uint32_t extra_samples);
   void initial_memcpy_callback();
   //http://en.cppreference.com/w/cpp/language/explicit
   explicit DSPCore(zmq::socket_t *ack_s, zmq::socket_t *timing_s, zmq::socket_t *data_write_socket,
@@ -88,6 +89,7 @@ class DSPCore {
   std::vector<cuComplex> get_rf_samples_h();
   double* get_frequencies_p();
   uint32_t get_num_rf_samples();
+  uint32_t get_filter_rolloff_samples();
   uint32_t get_sequence_num();
   double get_rx_rate();
   double get_output_sample_rate();
@@ -194,6 +196,9 @@ class DSPCore {
 
   //! The number of rf samples per antenna.
   uint32_t num_rf_samples;
+
+  //! Number of extra filter rolloff samples used.
+  uint32_t filter_rolloff_samples;
 
   //! A set of beam angle phases for each beam direction.
   std::vector<cuComplex> beam_phases;

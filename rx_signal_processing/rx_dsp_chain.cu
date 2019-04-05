@@ -314,7 +314,7 @@ int main(int argc, char **argv){
     }
 
     dp->cuda_postprocessing_callback(rx_freqs, total_antennas, samples_needed, samples_per_antenna,
-                                      total_output_samples);
+                                      total_output_samples, extra_samples);
 
   } //for(;;)
 }

@@ -11,6 +11,7 @@ message ProcessedData {
     double initialization_time = 6;
     double sequence_start_time = 7;
     string rf_samples_location = 8;
+    uint32 filter_rolloff_samples = 9;
 
     message OutputDataSet {
         repeated ComplexData mainacf = 1;

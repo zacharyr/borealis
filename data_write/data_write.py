@@ -125,6 +125,7 @@ class ParseData(object):
 
         self._rx_rate = 0.0
         self._output_sample_rate = 0.0
+        self._filter_rolloff_samples = 0.0
 
         self._bfiq_available = False
         self._bfiq_accumulator = self.nested_dict()
@@ -242,6 +243,7 @@ class ParseData(object):
 
         self._rx_rate = self.processed_data.rx_sample_rate
         self._output_sample_rate = self.processed_data.output_sample_rate
+        self._filter_rolloff_samples = self.processed_data.filter_rolloff_samples
 
         for data_set in self.processed_data.outputdataset:
             self._slice_ids.add(data_set.slice_id)
@@ -327,6 +329,15 @@ class ParseData(object):
             float: output sampling rate in Hz.
         """
         return self._output_sample_rate
+
+    @property
+    def filter_rolloff_samples(self):
+        """Return the number of filter rolloff samples added.
+
+        Returns:
+            int: number of filter rolloff samples.
+        """
+        return self._filter_rolloff_samples
 
     @property
     def slice_ids(self):
@@ -734,6 +745,7 @@ class DataWrite(object):
             param['data'] = np.concatenate(samples_list)
 
             param['rx_sample_rate'] = np.float32(data_parsing.rx_rate)
+            param['filter_rolloff_samples'] = np.uint32(data_parsing.filter_rolloff_samples)
 
             total_ants = self.options.main_antenna_count + self.options.intf_antenna_count
             param['num_samps'] = np.uint32(len(samples_list[0])/total_ants)
@@ -983,27 +995,6 @@ def main():
         if dsp_to_data_write in socks and socks[dsp_to_data_write] == zmq.POLLIN:
             data = so.recv_bytes(dsp_to_data_write, options.dsp_to_dw_identity, printing)
 
-            if not first_time:
-                if data_parsing.sequence_num == final_integration:
-
-                    if integration_meta.experiment_string != current_experiment:
-                        data_write = DataWrite(options)
-                        current_experiment = integration_meta.experiment_string
-
-                    kwargs = dict(write_bfiq=args.enable_bfiq,
-                                           write_pre_bfiq=args.enable_pre_bfiq,
-                                           write_raw_rf=args.enable_raw_rf,
-                                           write_tx=args.enable_tx,
-                                           file_ext=args.file_type,
-                                           integration_meta=integration_meta,
-                                           data_parsing=data_parsing,
-                                           write_rawacf=False)
-                    thread = threading.Thread(target=data_write.output_data, kwargs=kwargs)
-                    thread.daemon = True
-                    thread.start()
-                    data_parsing = ParseData()
-
-
             first_time = False
 
             start = time.time()
@@ -1012,8 +1003,26 @@ def main():
             printing("Time to parse: {} ms".format((end-start)*1000))
 
 
+        if not first_time:
+            print(final_integration, data_parsing.sequence_num)
+            if data_parsing.sequence_num == final_integration:
 
+                if integration_meta.experiment_string != current_experiment:
+                    data_write = DataWrite(options)
+                    current_experiment = integration_meta.experiment_string
 
+                kwargs = dict(write_bfiq=args.enable_bfiq,
+                                       write_pre_bfiq=args.enable_pre_bfiq,
+                                       write_raw_rf=args.enable_raw_rf,
+                                       write_tx=args.enable_tx,
+                                       file_ext=args.file_type,
+                                       integration_meta=integration_meta,
+                                       data_parsing=data_parsing,
+                                       write_rawacf=False)
+                thread = threading.Thread(target=data_write.output_data, kwargs=kwargs)
+                thread.daemon = True
+                thread.start()
+                data_parsing = ParseData()
 
 
 if __name__ == '__main__':

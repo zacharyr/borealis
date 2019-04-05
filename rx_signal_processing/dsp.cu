@@ -378,6 +378,7 @@ namespace {
     } // close loop over frequencies.
 
     pd.set_rf_samples_location(dp->get_shared_memory_name());
+    pd.set_filter_rolloff_samples(dp->get_filter_rolloff_samples());
     pd.set_sequence_num(dp->get_sequence_num());
     pd.set_rx_sample_rate(dp->get_rx_rate());
     pd.set_output_sample_rate(dp->get_output_sample_rate());
@@ -825,7 +826,8 @@ void DSPCore::send_timing()
 void DSPCore::cuda_postprocessing_callback(std::vector<double> freqs, uint32_t total_antennas,
                                             uint32_t num_samples_rf,
                                             std::vector<uint32_t> samples_per_antenna,
-                                            std::vector<uint32_t> total_output_samples)
+                                            std::vector<uint32_t> total_output_samples,
+                                            uint32_t extra_samples)
 {
   #ifdef ENGINEERING_DEBUG
     for (uint32_t i=0; i<filter_outputs_d.size()-1; i++) {
@@ -839,6 +841,7 @@ void DSPCore::cuda_postprocessing_callback(std::vector<double> freqs, uint32_t t
   num_rf_samples = num_samples_rf;
   num_antennas = total_antennas;
   this->samples_per_antenna = samples_per_antenna;
+  filter_rolloff_samples = extra_samples;
 
   gpuErrchk(cudaStreamAddCallback(stream, postprocess, this, 0));
 
@@ -1017,6 +1020,16 @@ uint32_t DSPCore::get_num_antennas()
 uint32_t DSPCore::get_num_rf_samples()
 {
   return num_rf_samples;
+}
+
+/**
+ * @brief      Gets the filter rolloff samples.
+ *
+ * @return     The filter rolloff samples.
+ */
+uint32_t DSPCore::get_filter_rolloff_samples()
+{
+  return filter_rolloff_samples;
 }
 
 /**

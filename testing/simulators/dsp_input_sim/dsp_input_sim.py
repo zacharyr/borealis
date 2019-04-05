@@ -103,14 +103,14 @@ def main():
                 l.lag_num = j
 
 
-    def fill_samples_metadata(record, samples_metadata, sequence_num, start_time):
+    def fill_samples_metadata(record, samples_metadata, sequence_num, start_time, extra_samps):
         samples_metadata.initialization_time = 0.0
         samples_metadata.sequence_num = sequence_num
         samples_metadata.rx_rate = record['rx_sample_rate']
         samples_metadata.sequence_time = record['int_time']
         samples_metadata.sequence_start_time = start_time
-        samples_metadata.ringbuffer_size = record['num_samps'] - 2*10000
-        samples_metadata.numberofreceivesamples = record['num_samps']
+        samples_metadata.ringbuffer_size = record['num_samps']
+        samples_metadata.numberofreceivesamples = record['num_samps'] - 2*extra_samps
 
 
     def fill_sigproc_packet(record, sig_packet, sequence_num):
@@ -169,9 +169,10 @@ def main():
         data = np.reshape(rec['data'], tuple(rec['data_dimensions']))
 
         start_sqn_num = sqn_num
+
         for i in range(data.shape[0]):
+            print(sqn_num)
             mapped_mem = mmap.mmap(shm.fd, shm.size)
-            #print(data[i])
             mapped_mem.write(data[i].tobytes())
             mapped_mem.close()
 
@@ -182,8 +183,10 @@ def main():
 
 
             samples_metadata = rxsamplesmetadata_pb2.RxSamplesMetadata()
-            start_time = sqn_num * (rec['num_samps']/RX_RATE)
-            fill_samples_metadata(rec, samples_metadata, sqn_num, start_time)
+
+            extra_samps = rec['filter_rolloff_samples']
+            start_time = sqn_num * (rec['num_samps']/RX_RATE) + extra_samps/RX_RATE
+            fill_samples_metadata(rec, samples_metadata, sqn_num, start_time, extra_samps)
 
             so.recv_request(driver_to_dsp, options.dsp_to_driver_identity, lambda *args: None)
             so.send_bytes(driver_to_dsp, options.dsp_to_driver_identity,
@@ -202,6 +205,7 @@ def main():
         fill_datawrite_meta(rec, datawrite_metadata, start_sqn_num)
         so.send_bytes(radctrl_to_dw, options.dw_to_radctrl_identity,
                         datawrite_metadata.SerializeToString())
+
 
 main()
 
