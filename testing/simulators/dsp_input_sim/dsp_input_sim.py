@@ -124,7 +124,7 @@ def main():
         for i,f in enumerate(record['rx_frequencies']):
             rx_chan = sig_packet.rxchannel.add()
             rx_chan.slice_id = i
-            rx_chan.rxfreq = f
+            rx_chan.rxfreq = (rec['rx_center_freq'] * 1e3) - (f * 1e3)
             rx_chan.nrang = NRANGE
             rx_chan.frang = FRANGE
             for beam_dir in BEAM_DIRECTIONS:
@@ -208,7 +208,5 @@ def main():
 
 
 main()
-
-
 
 
