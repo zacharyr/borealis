@@ -3,6 +3,7 @@ import mmap
 import sys
 import numpy as np
 import deepdish as dd
+import deepdish.io.ls as ddls
 import posix_ipc as ipc
 import datetime as dt
 
@@ -144,7 +145,8 @@ def main():
 
 
     filename = sys.argv[1]
-    records = list(dd.io.load(filename).values())
+    #records = list(dd.io.load(filename).values())
+    groups = list(ddls.get_tree(filename).children.keys())
 
     sockets = so.create_sockets([options.radctrl_to_dsp_identity,
                                     options.driver_to_dsp_identity,
@@ -158,14 +160,17 @@ def main():
     brian_to_dspend = sockets[3]
     radctrl_to_dw = sockets[4]
 
-    total_samps = int(np.prod(records[0]['data_dimensions'][1:]))
+    rec_one = dd.io.load(filename, group="/"+groups[0])
+    total_samps = int(np.prod(rec_one['data_dimensions'][1:]))
 
     ringbuffer_bytes = int(total_samps * np.dtype(np.complex64).itemsize)
 
     shm = ipc.SharedMemory(options.ringbuffer_name, flags=ipc.O_CREAT, size=ringbuffer_bytes)
 
     sqn_num = 0
-    for rec in records:
+    for group in groups:
+        rec = dd.io.load(filename, group="/"+group)
+
         data = np.reshape(rec['data'], tuple(rec['data_dimensions']))
 
         start_sqn_num = sqn_num
