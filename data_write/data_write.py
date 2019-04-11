@@ -866,8 +866,8 @@ class DataWrite(object):
                 parameters['main_antenna_count'] = np.uint32(len(rx_freq.rx_main_antennas))
                 parameters['intf_antenna_count'] = np.uint32(len(rx_freq.rx_intf_antennas))
                 parameters['freq'] = np.uint32(rx_freq.rxfreq)
-                parameters['tx_center_freq'] = np.float32(integration_meta.tx_center_freq)
-                parameters['rx_center_freq'] = np.float32(integration_meta.rx_center_freq)
+                parameters['tx_center_freq'] = np.float64(integration_meta.tx_center_freq)
+                parameters['rx_center_freq'] = np.float64(integration_meta.rx_center_freq)
                 parameters['comment'] = rx_freq.comment
                 parameters['samples_data_type'] = "complex float"
                 parameters['pulses'] = np.array(rx_freq.ptab.pulse_position, dtype=np.uint32)
@@ -1004,7 +1004,6 @@ def main():
 
 
         if not first_time:
-            print(final_integration, data_parsing.sequence_num)
             if data_parsing.sequence_num == final_integration:
 
                 if integration_meta.experiment_string != current_experiment:
