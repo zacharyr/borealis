@@ -244,7 +244,10 @@ class Sequence(ScanClassBase):
         power_divider = max([len(p['component_info']) for p in combined_pulses_metadata])
         all_antennas = []
         for slice_id in self.slice_ids:
-            self.basic_slice_pulses[slice_id] *= max_usrp_dac_amplitude / power_divider
+            #For the tri-frequency case:
+            self.basic_slice_pulses[0] *= max_usrp_dac_amplitude * 0.5
+            self.basic_slice_pulses[1] *= max_usrp_dac_amplitude * 0.3
+            self.basic_slice_pulses[2] *= max_usrp_dac_amplitude * 0.2
 
             slice_tx_antennas = self.slice_dict[slice_id]['tx_antennas']
             all_antennas.extend(slice_tx_antennas)
@@ -382,11 +385,6 @@ class Sequence(ScanClassBase):
         sequence = np.zeros([main_antenna_count, buffer_len], dtype=np.complex64)
 
         for slice_id in self.slice_ids:
-            #For the tri-frequency case:
-            self.basic_slice_pulses[0] *= max_usrp_dac_amplitude * 0.5
-            self.basic_slice_pulses[1] *= max_usrp_dac_amplitude * 0.3
-            self.basic_slice_pulses[2] *= max_usrp_dac_amplitude * 0.2
-
             exp_slice = self.slice_dict[slice_id]
             basic_samples = self.basic_slice_pulses[slice_id][beam_iter]  # num_antennas x num_samps
 
