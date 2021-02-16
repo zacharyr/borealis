@@ -382,6 +382,10 @@ class Sequence(ScanClassBase):
         sequence = np.zeros([main_antenna_count, buffer_len], dtype=np.complex64)
 
         for slice_id in self.slice_ids:
+            #For the dual-frequency case:
+            self.basic_slice_pulses[0] *= max_usrp_dac_amplitude * 0.6
+            self.basic_slice_pulses[1] *= max_usrp_dac_amplitude * 0.4
+
             exp_slice = self.slice_dict[slice_id]
             basic_samples = self.basic_slice_pulses[slice_id][beam_iter]  # num_antennas x num_samps
 
