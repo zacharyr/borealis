@@ -45,10 +45,10 @@ PREFIX="$LOGDIR/$YEAR.$MONTH.$DAY.$HOUR:$MINUTE"
 TMPFILE="$PREFIX-tmp"
 
 touch $TMPFILE
-cat "$PREFIX-radar_control" | grep -e "^\d{6}\.\d{6}" >> $TMPFILE
-cat "$PREFIX-brian" | grep -e "^\d{6}\.\d{6}" >> $TMPFILE
-cat "$PREFIX-data_write" | grep -e "^\d{6}\.\d{6}" >> $TMPFILE
-cat "$PREFIX-signal_processing" | grep -e "^\d{6}\.\d{6}" >> $TMPFILE
+cat "$PREFIX-radar_control" | grep -E "^[[:digit:]]{6}" >> $TMPFILE
+cat "$PREFIX-brian" | grep -E "^[[:digit:]]{6}" >> $TMPFILE
+cat "$PREFIX-data_write" | grep -E "^[[:digit:]]{6}" >> $TMPFILE
+cat "$PREFIX-signal_processing" | grep -E "^[[:digit:]]{6}" >> $TMPFILE
 
 sort $TMPFILE > "$PREFIX-log"
 rm $TMPFILE
