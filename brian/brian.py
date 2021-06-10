@@ -13,7 +13,6 @@ from datetime import datetime
 import threading
 import argparse
 import zmq
-import utils.shared_macros.shared_macros as sm
 
 sys.path.append(os.environ["BOREALISPATH"])
 
@@ -26,6 +25,9 @@ import driverpacket_pb2
 import sigprocpacket_pb2
 import rxsamplesmetadata_pb2
 import processeddata_pb2
+
+sys.path.append(os.environ["BOREALISPATH"] + '/utils/shared_macros')
+import shared_macros as sm
 
 sys.path.append(os.environ["BOREALISPATH"] + '/utils/experiment_options')
 import experimentoptions as options
@@ -196,7 +198,7 @@ def sequence_timing(opts):
         if brian_to_driver in socks and socks[brian_to_driver] == zmq.POLLIN:
 
             #Receive metadata of completed sequence from driver such as timing
-            reply = so.recv_obj(brian_to_driver, opts.driver_to_brian_identity, printing)
+            reply = so.recv_obj(brian_to_driver, opts.driver_to_brian_identity, brian_print)
             meta = rxsamplesmetadata_pb2.RxSamplesMetadata()
             meta.ParseFromString(reply)
 
@@ -216,7 +218,7 @@ def sequence_timing(opts):
         if brian_to_radar_control in socks and socks[brian_to_radar_control] == zmq.POLLIN:
 
             #Get new sequence metadata from radar control
-            reply = so.recv_obj(brian_to_radar_control, opts.radctrl_to_brian_identity, printing)
+            reply = so.recv_obj(brian_to_radar_control, opts.radctrl_to_brian_identity, brian_print)
 
             sigp = sigprocpacket_pb2.SigProcPacket()
             sigp.ParseFromString(reply)
