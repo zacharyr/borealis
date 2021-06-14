@@ -365,6 +365,46 @@ def fft_to_plot(samples, rate, plot_width=None, center=0):
         return fft_to_plot[first_sample:end_sample], xf[first_sample:end_sample]
 
 
+def plot_rawrf_tx(rawrf_dict, tx_dict, sequence=0, real_only=True, start_sample=18000, end_sample=20000, antenna_indices=None):
+    """
+    This function plots the rawrf and txdata on top of each other, matching antennas in each plot.
+    I.e. Tx 1 plots with Rx 1, Tx 2 with Rx 2, and so on. 
+    :param rawrf_dict: dict of the hdf5 data of a given record of rawrf, ie deepdish.io.load(filename)[record_name]
+    :param tx_dict: dict of the hdf5 data of a given record of txdata, ie deepdish.io.load(filename)[record_name]
+    """
+
+    rawrf = reshape_rawrf_data(rawrf_dict)
+    tx = reshape_txdata(tx_dict)
+    
+    fig, axs = plt.subplots(20, 1, sharex=True)
+      
+    if antenna_indices is None:
+        indices = range(0, rawrf_dict['data'].shape[1])
+    else:
+        indices = antenna_indices
+
+    print('Sequence number: {}'.format(sequence))
+    print('Sample number {} to {}'.format(start_sample, end_sample))
+    for antenna in indices:
+        if antenna < 16:
+            axs[antenna].set_title('Main Antenna {}'.format(antenna))
+        else:
+            axs[antenna].set_title('Main Antenna {}'.format(antenna))
+
+        if antenna < 16:
+            axs[antenna].plot(np.arange(end_sample-start_sample), tx_dict['data'][sequence,antenna,start_sample:end_sample].real, label='Real Tx Data')
+        axs[antenna].plot(np.arange(end_sample-start_sample), rawrf_dict['data'][sequence,antenna,start_sample:end_sample].real, label='Real Rawrf')
+       
+        if not real_only:
+            if antenna < 16:
+                axs[antenna].plot(np.arange(end_sample-start_sample), tx_dict['data'][sequence,antenna,start_sample:end_sample].imag, label='Imag Tx Data')
+            axs[antenna].plot(np.arange(end_sample-start_sample), rawrf_dict['data'][sequence,antenna,start_sample:end_sample].imag, label='Imag Rawrf')
+           
+        axs[antenna].legend()
+    fig.set_size_inches(8, 40)
+    plt.show()
+
+
 
 def find_fft_peaks(fft_samples, fft_x):
     """
