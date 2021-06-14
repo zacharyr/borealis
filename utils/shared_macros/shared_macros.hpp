@@ -5,6 +5,8 @@
 #include <zmq.hpp>
 #include <iostream>
 #include <chrono>
+#include <ctime>
+#include <cstdio>
 
 #define COLOR_BLACK(x)   "\033[30m"<< x << "\033[0m"
 #define COLOR_RED(x)     "\033[31m"<< x << "\033[0m"
@@ -15,7 +17,17 @@
 #define COLOR_CYAN(x)    "\033[36m"<< x << "\033[0m"
 #define COLOR_WHITE(x)   "\033[37m"<< x << "\033[0m"
 
-#define RUNTIME_MSG(x) do {std::cout << x << std::endl;} while (0)
+#define RUNTIME_MSG(x) do {                                                                     \
+        auto sc_now = std::chrono::system_clock::now();                                         \
+        auto now = std::chrono::system_clock::to_time_t(sc_now);                                \
+        auto microseconds = (sc_now.time_since_epoch().count() % 1000000); 	                \
+        char buffer [80];                                                                       \
+        std::time(&now);                                                                        \
+        auto timeinfo = gmtime(&now);                                                           \
+        strftime(buffer, 80, "%H%M%S", timeinfo);                                               \
+        sprintf(buffer, "%s.%06d - ", buffer, (int)microseconds);                               \
+        std::cout << buffer << x << std::endl;                                                  \
+        } while (0)
 
 
 #ifdef DEBUG
