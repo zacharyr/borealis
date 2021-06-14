@@ -296,9 +296,7 @@ def fft_and_plot_rawrf_data(record_dict, record_info_string, sequence=0, real_on
 
     record_dict = reshape_rawrf_data(record_dict)
     # new data dimensions are num_sequences, num_antennas, num_samps    
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
-    ax1.set_title('Main Antennas {}'.format(record_info_string))
-    ax2.set_title('Intf Antennas {}'.format(record_info_string))
+    fig, axs = plt.subplots(20, 1, sharex=True)
 
     if antenna_indices is None:
         indices = range(0, record_dict['data'].shape[1])
@@ -313,15 +311,19 @@ def fft_and_plot_rawrf_data(record_dict, record_info_string, sequence=0, real_on
     for antenna in indices:
         #if max(abs(record_dict['data'][index,antenna,18000:20000])) < 0.05:
         #    continue
+        if antenna < 16:
+            axs[antenna].set_title('Rawrf FFT - Main Antenna{}'.format(antenna))
+        else:
+            axs[antenna].set_title('Rawrf FFT - Intf Antenna {}'.format(antenna))
+
         fft_samps, xf = fft_to_plot(record_dict['data'][sequence,antenna,start_sample:end_sample], record_dict['rx_sample_rate'], plot_width=plot_width, center=center)                    
         len_samples = len(record_dict['data'][sequence,antenna,start_sample:end_sample])
-        if antenna < record_dict['main_antenna_count']:
-            ax1.plot(xf, 1.0/len_samples * np.abs(fft_samps), label='{}'.format(antenna))
-        else:
-            ax2.plot(xf, 1.0/len_samples * np.abs(fft_samps), label='{}'.format(antenna)) 
-    ax1.legend()   
-    ax2.legend()  
-    ax2.set_xlabel('Hz')     
+
+        axs[antenna].plot(xf, 1.0/len_samples * np.abs(fft_samps))
+
+    axs[-1].set_xlabel('Hz')
+    fig.set_size_inches(8, 40)
+    plt.show()
     return fft_samps, xf, fig
 
 
