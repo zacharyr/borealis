@@ -6,6 +6,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fftpack import fft
+from scipy.signal import find_peaks
 import math
 
 
@@ -263,21 +264,27 @@ def fft_and_plot_antennas_iq(record_dict, record_info_string, sequence=0, real_o
     print('Sequence number: {}'.format(sequence))
     print('Antennas: {}'.format([record_dict['antenna_arrays_order'][i] for i in indices]))
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)    
+    fig, axs = plt.subplots(20, 1, sharex=True)    
     for index in indices:
         antenna = antennas_present[index]
-        ax1.set_title('FFT Main Antennas {}'.format(record_info_string))
-        ax2.set_title('FFT Intf Antennas {}'.format(record_info_string))
+        if index < 16:
+            axs[index].set_title('FFT Main Antenna {}'.format(index))
+        else:
+            axs[index].set_title('FFT Intf Antenna {}'.format(index))
+        
         if not plot_width:
             fft_samps, xf = fft_to_plot(record_dict['data'][index,sequence,:], record_dict['rx_sample_rate'])
         else:
             fft_samps, xf = fft_to_plot(record_dict['data'][index,sequence,:], record_dict['rx_sample_rate'], plot_width=plot_width)            
+        
+        peaks = find_fft_peaks(fft_samps, xf)        
         len_samples = len(record_dict['data'][index,sequence,:])
-        if antenna < record_dict['main_antenna_count']:
-            ax1.plot(xf, 1.0/len_samples * np.abs(fft_samps), label='{}'.format(antenna))
-        else:
-            ax2.plot(xf, 1.0/len_samples * np.abs(fft_samps), label='{}'.format(antenna))
-    ax2.set_xlabel('Hz')  
+        print('Antenna {} Peaks:\n{}\n'.format(index, ['{:.2f}'.format(xf[peak]) for peak in peaks]))
+        axs[index].plot(xf, 1.0/len_samples * np.abs(fft_samps), label='{}'.format(antenna))
+        axs[index].plot(xf[peaks], 1.0/len_samples*np.abs(fft_samps[peaks]), 'x')
+    axs[-1].set_xlabel('Hz')  
+    fig.set_size_inches(8, 40)
+
     return fft_samps, xf, fig
 
 
@@ -406,10 +413,11 @@ def plot_rawrf_tx(rawrf_dict, tx_dict, sequence=0, real_only=True, start_sample=
 
 
 
-def find_fft_peaks(fft_samples, fft_x):
+def find_fft_peaks(fft_samples, fft_x, threshold=25000):
     """
     Find the peaks of the fft by looking for the max values.
 
     """
-    
+    peaks, props = find_peaks(1.0/len(fft_samples) * np.abs(fft_samples), height=threshold)
+    return peaks
     
