@@ -393,12 +393,12 @@ def plot_rawrf_tx(rawrf_dict, tx_dict, sequence=0, real_only=True, start_sample=
 
         if antenna < 16:
             axs[antenna].plot(np.arange(end_sample-start_sample), tx_dict['data'][sequence,antenna,start_sample:end_sample].real, label='Real Tx Data')
-        axs[antenna].plot(np.arange(end_sample-start_sample), rawrf_dict['data'][sequence,antenna,start_sample:end_sample].real, label='Real Rawrf')
+        axs[antenna].plot(np.arange(end_sample-start_sample), rawrf_dict['data'][sequence,antenna,start_sample:end_sample].real, label='Real Rawrf', color='orange')
        
         if not real_only:
             if antenna < 16:
                 axs[antenna].plot(np.arange(end_sample-start_sample), tx_dict['data'][sequence,antenna,start_sample:end_sample].imag, label='Imag Tx Data')
-            axs[antenna].plot(np.arange(end_sample-start_sample), rawrf_dict['data'][sequence,antenna,start_sample:end_sample].imag, label='Imag Rawrf')
+            axs[antenna].plot(np.arange(end_sample-start_sample), rawrf_dict['data'][sequence,antenna,start_sample:end_sample].imag, label='Imag Rawrf', color='orange')
            
         axs[antenna].legend()
     fig.set_size_inches(8, 40)
