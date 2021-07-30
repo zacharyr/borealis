@@ -16,6 +16,7 @@ import mmap
 import warnings
 import time
 import threading
+from multiprocessing import Process
 import subprocess as sp
 import argparse as ap
 import numpy as np
@@ -301,9 +302,9 @@ class ParseData(object):
         # TODO(keith): Parallelize?
         procs = []
 
-        procs.append(self.parse_correlations)
-        procs.append(self.parse_bfiq)
-        procs.append(self.parse_antenna_iq)
+        procs.append(Process(target=self.parse_correlations))
+        procs.append(Process(target=self.parse_bfiq))
+        procs.append(Process(target=self.parse_antenna_iq))
 
         for proc in procs:
             proc.start()
