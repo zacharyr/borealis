@@ -298,19 +298,28 @@ class ParseData(object):
             self._slice_ids.add(data_set.slice_id)
 
         self._rawrf_locations.append(self.processed_data.rf_samples_location)
+        
+        threads = []
+        threads.append(threading.Thread(target=self.parse_correlations))
+        threads.append(threading.Thread(target=self.parse_bfiq))
+        threads.append(threading.Thread(target=self.parse_antenna_iq))
 
-        # TODO(keith): Parallelize?
-        procs = []
+        for thread in threads:
+            thread.daemon = True
+            thread.start()
+            thread.join()
 
-        procs.append(Process(target=self.parse_correlations))
-        procs.append(Process(target=self.parse_bfiq))
-        procs.append(Process(target=self.parse_antenna_iq))
+        #procs = []
 
-        for proc in procs:
-            proc.start()
+        #procs.append(Process(target=self.parse_correlations))
+        #procs.append(Process(target=self.parse_bfiq))
+        #procs.append(Process(target=self.parse_antenna_iq))
 
-        for proc in procs:
-            proc.join()
+        #for proc in procs:
+        #    proc.start()
+
+        #for proc in procs:
+        #    proc.join()
 
     @property
     def sequence_num(self):
