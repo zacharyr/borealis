@@ -301,9 +301,9 @@ class ParseData(object):
         # TODO(keith): Parallelize?
         procs = []
 
-        self.parse_correlations()
-        self.parse_bfiq()
-        self.parse_antenna_iq()
+        procs.append(self.parse_correlations)
+        procs.append(self.parse_bfiq)
+        procs.append(self.parse_antenna_iq)
 
         for proc in procs:
             proc.start()
