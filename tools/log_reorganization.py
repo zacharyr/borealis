@@ -59,8 +59,6 @@ def unique_dates():
     """
     Get all the unique dates from the log files, and
     stores them in a text file.
-
-    :return:
     """
     dates_cmd = "ls {dir} | grep -o \"^[[:digit:]]\{{4\}}\.[[:digit:]]\{{2\}}\.[[:digit:]]\{{2\}}\" | uniq > /tmp/dates.txt;"
 
@@ -72,8 +70,6 @@ def create_dirs_and_move_files():
     """
     Creates a directory for each unique day that has log files,
     and moves the respective log files into it.
-
-    :return:
     """
     date_file = "/tmp/dates.txt"
 
@@ -85,17 +81,35 @@ def create_dirs_and_move_files():
             check_dir_cmd = "find /data/borealis_logs/ -name \"{date}\";".format(date="".join(date))
             output = execute_cmd(check_dir_cmd)
             if "".join(date) not in output:
-                print("Found it")
                 # Make a new directory for that date
                 mkdir_cmd = "mkdir {log_dir}{year}{month}{day};"
                 mkdir_cmd = mkdir_cmd.format(log_dir=args.log_dir, year=date[0], month=date[1], day=date[2])
                 execute_cmd(mkdir_cmd)
-            else:
-                print("Already there")
 
             # Move all files from the date to the its respective directory
             mv_cmd = "mv {log_dir}{date_split}.* {log_dir}{date_joined}/;"
             mv_cmd = mv_cmd.format(date_split=line.strip(), log_dir=args.log_dir, date_joined="".join(date))
+            execute_cmd(mv_cmd)
+
+
+def rename_files():
+    """
+    Renames the log files from YYYY.MM.DD.HH:MM-[module] to YYYYMMDD.HH.MM-[module].
+    """
+    ls_dir_cmd = "ls -d {log_dir}*/".format(log_dir=args.log_dir)
+    output = execute_cmd(ls_dir_cmd)
+
+    dates = output.strip().split()
+
+    for date in dates:
+        ls_logs_cmd = "ls {date}".format(date=date)
+        output = execute_cmd(ls_logs_cmd)
+        logs = output.strip().split()
+
+        for log in logs:
+            timestamp = log.split(".")
+            timestamp = "".join(timestamp[0:3]) + "." + ".".join(timestamp[3].split(":"))
+            mv_cmd = "mv {date}{log} {date}{timestamp};".format(date=date, log=log, timestamp=timestamp)
             execute_cmd(mv_cmd)
 
 
@@ -109,4 +123,5 @@ if not os.path.isdir(args.log_dir):
 
 unique_dates()
 create_dirs_and_move_files()
+rename_files()
 
