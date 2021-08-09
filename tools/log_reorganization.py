@@ -9,6 +9,8 @@ Script for reorganizing Borealis log file directories.
 
 import subprocess as sp
 import argparse as ap
+import os
+import sys
 
 
 def usage_msg():
@@ -20,13 +22,13 @@ def usage_msg():
     :returns: the usage message
     """
 
-    usage_message = """ log_reorganization.py [-h] [log_directory]
+    usage_message = """ log_reorganization.py [-h] [--log_dir LOG_DIR]
 
     This script will reorganize the Borealis log file directory structure
-    and naming convention. The default log_directory is /data/borealis_logs 
+    and naming convention. The default log_dir is /data/borealis_logs 
     unless a different directory is passed as an argument.
     
-    Within log_directory, subdirectories will be made for each date that
+    Within log_dir, subdirectories will be made for each date that
     has a log file. Each subdirectory is the date of the log files within
     it, e.g. YYYYMMDD, and will contain all log files from that day.
     All log files from that date will also be renamed, to follow the format
@@ -53,11 +55,26 @@ def execute_cmd(cmd):
     return output.decode('utf-8')
 
 
-def main():
-    parser = ap.ArgumentParser(usage=usage_msg(), description="Installation script for Borealis utils")
+def unique_dates():
+    """
+    Get all the unique dates from the log files, and
+    stores them in a text file.
 
-    print(usage_msg())
+    :return:
+    """
+    dates_cmd = "ls {dir} | grep -o \"^[[:digit:]]\{{4\}}\.[[:digit:]]\{{2\}}\.[[:digit:]]\{{2\}}\" | uniq > /tmp/dates.txt;"
+
+    dates_cmd = dates_cmd.format(dir=args.log_dir)
+    execute_cmd(dates_cmd)
 
 
-if __name__ == '__main__':
-    main()
+parser = ap.ArgumentParser(usage=usage_msg(), description="Updates Borealis log directory")
+parser.add_argument("--log_dir", help="Path to the log file directory", default="/data/borealis_logs/")
+args = parser.parse_args()
+
+if not os.path.isdir(args.log_dir):
+    print("Log directory does not exist: {}".format(args.log_dir))
+    sys.exit(1)
+
+unique_dates()
+
