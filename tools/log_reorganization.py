@@ -78,7 +78,7 @@ def create_dirs_and_move_files():
             date = line.strip().split(".")
 
             # Check that the directory doesn't already exist
-            check_dir_cmd = "find /data/borealis_logs/ -name \"{date}\";".format(date="".join(date))
+            check_dir_cmd = "find {log_dir} -name \"{date}\";".format(log_dir=args.log_dir, date="".join(date))
             output = execute_cmd(check_dir_cmd)
             if "".join(date) not in output:
                 # Make a new directory for that date
@@ -87,7 +87,7 @@ def create_dirs_and_move_files():
                 execute_cmd(mkdir_cmd)
 
             # Move all files from the date to the its respective directory
-            mv_cmd = "mv {log_dir}{date_split}.* {log_dir}{date_joined}/;"
+            mv_cmd = "mv {log_dir}{date_split}* {log_dir}{date_joined}/;"
             mv_cmd = mv_cmd.format(date_split=line.strip(), log_dir=args.log_dir, date_joined="".join(date))
             execute_cmd(mv_cmd)
 
