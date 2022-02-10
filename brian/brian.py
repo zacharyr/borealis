@@ -82,6 +82,10 @@ def router(opts):
                 non_sent.append(frames)
         frames_to_send = non_sent
 
+        # Workaround for the problem of no internet killing the code. Prevents
+        # message buildup within the router by flushing on overflow.
+        if len(frames_to_send) > 5:
+            frames_to_send = []
 
 def sequence_timing(opts):
     """Thread function for sequence timing
